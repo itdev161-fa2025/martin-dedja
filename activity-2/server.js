@@ -1,13 +1,14 @@
 import express from "express";
 import connectDB from "./config/db.js";
 import { check, validationResult } from "express-validator";
+import cors from "cors";
 
 const app = express();
 
 connectDB();
 
 app.use(express.json({ extended: false }));
-
+app.use(cors({ origin: "http://localhost:3000" }));
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
@@ -32,6 +33,6 @@ app.post(
   }
 );
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.listen(5000, () => {
+  console.log("Server is running on port 5000");
 });
