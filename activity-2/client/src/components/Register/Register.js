@@ -1,28 +1,36 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useHistory } from "react-router-dom";
 
-const Register = () => {
+const Register = ({ authenticateUser }) => {
+  let history = useHistory();
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
     passwordConfirm: "",
   });
+  const [errorData, setErrorData] = useState({ errors: null });
 
   const { name, email, password, passwordConfirm } = userData;
+  const { errors } = errorData;
 
   const onChange = (e) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setUserData({
+      ...userData,
+      [name]: value,
+    });
   };
 
-  const register = async () => {
+  const registerUser = async () => {
     if (password !== passwordConfirm) {
       console.log("Passwords do not match");
     } else {
       const newUser = {
-        name,
-        email,
-        password,
+        name: name,
+        email: email,
+        password: password,
       };
 
       try {
@@ -33,53 +41,73 @@ const Register = () => {
         };
 
         const body = JSON.stringify(newUser);
-
         const res = await axios.post(
           "http://localhost:5000/api/users",
           body,
           config
         );
 
-        console.log(res.data);
-      } catch (err) {
-        console.error(err.response.data);
-        return;
+        localStorage.setItem("token", res.data.token);
+        history.push("/");
+      } catch (error) {
+        localStorage.removeItem("token");
+
+        setErrorData({
+          ...errors,
+          errors: error.response.data.errors,
+        });
       }
+
+      authenticateUser();
     }
   };
 
   return (
     <div>
       <h2>Register</h2>
-      <input
-        type="text"
-        name="name"
-        value={name}
-        onChange={(e) => onChange(e)}
-        placeholder="Name"
-      />
-      <input
-        type="email"
-        name="email"
-        value={email}
-        onChange={(e) => onChange(e)}
-        placeholder="Email"
-      />
-      <input
-        type="password"
-        name="password"
-        value={password}
-        onChange={(e) => onChange(e)}
-        placeholder="Password"
-      />
-      <input
-        type="password"
-        name="passwordConfirm"
-        value={passwordConfirm}
-        onChange={(e) => onChange(e)}
-        placeholder="Confirm Password"
-      />
-      <button onClick={register}>Register</button>
+      <div>
+        <input
+          type="text"
+          placeholder="Name"
+          name="name"
+          value={name}
+          onChange={(e) => onChange(e)}
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Email"
+          name="email"
+          value={email}
+          onChange={(e) => onChange(e)}
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Password"
+          name="password"
+          value={password}
+          onChange={(e) => onChange(e)}
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Confirm Password"
+          name="passwordConfirm"
+          value={passwordConfirm}
+          onChange={(e) => onChange(e)}
+        />
+      </div>
+      <div>
+        <button onClick={() => registerUser()}>Register</button>
+      </div>
+      <div>
+        {errors &&
+          errors.map((error) => <div key={error.msg}>{error.msg}</div>)}
+      </div>
     </div>
   );
 };

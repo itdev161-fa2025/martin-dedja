@@ -6,6 +6,7 @@ import User from "./models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import config from "config";
+import auth from "./middleware/auth.js";
 
 const app = express();
 
@@ -74,6 +75,15 @@ app.post(
     }
   }
 );
+
+app.get('/api/auth', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).send('Unknown server error');
+  }
+});
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");
